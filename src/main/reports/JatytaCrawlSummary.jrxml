@@ -1,0 +1,1301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="JatytaCrawlSummary" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="03955ddc-f0c3-4584-90fb-c9dbddd37fa8">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="96"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="org.apache.commons.io.IOUtils"/>
+	<import value="net.sf.jasperreports.engine.JRImageRenderer"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#6B91D5">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#CFD7E6">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 1_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table 2_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="Crosstab Data Text" hAlign="Center"/>
+	<subDataset name="FormValues" uuid="50bc241f-6849-45c1-9eaf-faf98591c134">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="kbjatyta"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="crawl_id" class="java.lang.String">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select * from jatytaformvaluerecord where idcrawlrecord = cast ($P{crawl_id} as integer)]]>
+		</queryString>
+		<field name="id" class="java.lang.Long"/>
+		<field name="formfieldxpath" class="java.lang.String"/>
+		<field name="idcrawlrecord" class="java.lang.Integer"/>
+		<field name="stateasociated" class="java.lang.Integer"/>
+		<field name="type" class="java.lang.String"/>
+		<field name="value" class="java.lang.String"/>
+	</subDataset>
+	<subDataset name="FormValuesStateFields" uuid="37be4edf-b16c-4a6d-ac16-737f01485f74">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="kbjatyta"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="crawl_id" class="java.lang.String">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select
+count( distinct formfieldxpath) as cantidad_campos,
+stateasociated
+from jatytaformvaluerecord where idcrawlrecord = cast ($P{crawl_id}  as integer) group by stateasociated]]>
+		</queryString>
+		<field name="cantidad_campos" class="java.lang.Long"/>
+		<field name="stateasociated" class="java.lang.Integer"/>
+	</subDataset>
+	<subDataset name="BrokenLinks" uuid="99e66d01-e8e1-48e0-bf87-1497410afa26">
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="kbjatyta"/>
+		<parameter name="crawl_id" class="java.lang.String">
+			<parameterDescription><![CDATA[]]></parameterDescription>
+			<defaultValueExpression><![CDATA[76]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[SELECT b.xpath AS link,
+	b.statecaller,
+	sn.name AS callername,
+	b.urlbroken,
+	b.image
+FROM jatytabrokenstate b
+	left join jatytastatename sn ON
+ sn.idcrawlrecord = b.idcrawlrecord and sn.state = b.statecaller
+where
+b.idcrawlrecord = cast( $P{crawl_id} as integer)]]>
+		</queryString>
+		<field name="link" class="java.lang.String"/>
+		<field name="statecaller" class="java.lang.Integer"/>
+		<field name="callername" class="java.lang.String"/>
+		<field name="urlbroken" class="java.lang.String"/>
+		<field name="image" class="java.io.InputStream"/>
+		<variable name="variable1" class="java.lang.String"/>
+	</subDataset>
+	<subDataset name="ValidationRecords" uuid="7513e8ae-f5f5-4191-b731-f348f20172e8">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="kbjatyta"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="crawl_id" class="java.lang.String">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select v.*,
+ts.state as targetstate,
+ts.name as targetname,
+vs.state as validationstate,
+vs.name as validationname
+
+from jatytavalidationrecord v
+left join jatytastatename ts
+on ts.idcrawlrecord = v.idcrawlrecord
+and ts.state = v.targetstate
+left join jatytastatename vs
+on vs.idcrawlrecord = v.idcrawlrecord
+and vs.state = v.validationstate
+where  v.idcrawlrecord = cast( $P{crawl_id} as integer)
+order by 1]]>
+		</queryString>
+		<field name="id" class="java.lang.Long"/>
+		<field name="idcrawlrecord" class="java.lang.Integer"/>
+		<field name="targetelementxpath" class="java.lang.String"/>
+		<field name="targetstate" class="java.lang.Integer"/>
+		<field name="validationelementxpath" class="java.lang.String"/>
+		<field name="validationstate" class="java.lang.Integer"/>
+		<field name="validationstatus" class="java.lang.String"/>
+		<field name="targetvalue" class="java.lang.String"/>
+		<field name="image" class="java.lang.Object">
+			<fieldDescription><![CDATA[Contains the image of the broken link element]]></fieldDescription>
+		</field>
+		<field name="value_order" class="java.lang.Integer"/>
+		<field name="targetname" class="java.lang.String"/>
+		<field name="validationname" class="java.lang.String"/>
+	</subDataset>
+	<subDataset name="ValidationFailed" uuid="cfc80414-0bcd-4932-bee1-b1e66f375419">
+		<parameter name="crawl_id" class="java.lang.String">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select
+min(ts.state) as min_state,
+ts.name as targetname,
+v.value_type
+
+from jatytavalidationrecord v
+left join jatytastatename ts
+on ts.idcrawlrecord = v.idcrawlrecord
+and ts.state = v.targetstate
+left join jatytastatename vs
+on vs.idcrawlrecord = v.idcrawlrecord
+and vs.state = v.validationstate
+where  v.idcrawlrecord = cast( $P{crawl_id} as integer) and v.validationstatus = 'FAILED'
+group by ts.name, v.value_type
+order by 1]]>
+		</queryString>
+		<field name="min_state" class="java.lang.Integer"/>
+		<field name="targetname" class="java.lang.String"/>
+		<field name="value_type" class="java.lang.String"/>
+	</subDataset>
+	<subDataset name="StatesNames" uuid="4903cfce-d5f8-40f1-a541-77232f512abf">
+		<parameter name="crawl_id" class="java.lang.String">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select
+min(ts.state) as first_state,
+count(ts.state)  as count_state,
+ts.name,
+count(ts.url) as count_url
+from jatytastatename ts
+where  ts.idcrawlrecord = cast( $P{crawl_id} as integer)
+group by ts.name
+order by 1]]>
+		</queryString>
+		<field name="first_state" class="java.lang.Integer"/>
+		<field name="count_state" class="java.lang.Long"/>
+		<field name="name" class="java.lang.String"/>
+		<field name="count_url" class="java.lang.Long"/>
+	</subDataset>
+	<subDataset name="ValidationSuccess" uuid="3f536efd-4138-4eab-9d9c-c5554e8d0c94">
+		<parameter name="crawl_id" class="java.lang.String">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select
+min(ts.state) as min_state,
+ts.name as targetname,
+v.value_type
+
+from jatytavalidationrecord v
+left join jatytastatename ts
+on ts.idcrawlrecord = v.idcrawlrecord
+and ts.state = v.targetstate
+left join jatytastatename vs
+on vs.idcrawlrecord = v.idcrawlrecord
+and vs.state = v.validationstate
+where  v.idcrawlrecord = cast( $P{crawl_id} as integer) and v.validationstatus = 'SUCCESS'
+group by ts.name, v.value_type
+order by 1]]>
+		</queryString>
+		<field name="min_state" class="java.lang.Integer"/>
+		<field name="targetname" class="java.lang.String"/>
+		<field name="value_type" class="java.lang.String"/>
+	</subDataset>
+	<parameter name="crawl_id" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+  id,
+  configurationid,
+  configurationname,
+  createtime,
+  interval '1 millisecond' * duration as duration,
+  idcrawlrecord,
+  starttime,
+  statesnumber,
+  case when whiteboxtest = true then 'White Box' else 'BlackBox' end as test,
+  (select count(distinct formfieldxpath) from jatytaformvaluerecord where idcrawlrecord = cast ($P{crawl_id} as integer) )as cantidad_campos,
+  (select count(*) from jatytaformvaluerecord where idcrawlrecord = cast ($P{crawl_id} as integer) )as cantidad_valores,
+  (select count(distinct stateasociated) from jatytaformvaluerecord where idcrawlrecord = cast ($P{crawl_id} as integer) )as cantidad_estados,
+ (select count(*) from jatytabrokenstate where  idcrawlrecord = cast ($P{crawl_id} as integer) ) as cantidad_enlaces_rotos,
+ (select count(distinct validationstate)
+ from jatytavalidationrecord  where  idcrawlrecord = cast ($P{crawl_id} as integer)) as cantidad_validation_estados,
+ (select count(*)
+ from jatytavalidationrecord  where  idcrawlrecord = cast ($P{crawl_id} as integer)) as cantidad_validation,
+ (select count(distinct statecaller) from jatytabrokenstate where  idcrawlrecord = cast ($P{crawl_id} as integer) ) as cantidad_estados_enlaces_rotos,
+ (select count(distinct jvr.validationstate)
+ from jatytavalidationrecord  jvr where  jvr.idcrawlrecord = cast ($P{crawl_id} as integer) and jvr.validationstatus = 'FAILED') as cantidad_form_error,
+
+(select count(*) from (select distinct sn.name from jatytavalidationrecord  jvr
+join jatytastatename sn on sn.state = jvr.targetstate and sn.idcrawlrecord = jvr.idcrawlrecord
+where  jvr.idcrawlrecord = cast ($P{crawl_id} as integer) and jvr.validationstatus = 'FAILED' and value_type='EMPTY') as cantidad)  as cantidad_form_error_vacio,
+
+(select count(*) from (select distinct sn.name from jatytavalidationrecord  jvr
+join jatytastatename sn on sn.state = jvr.targetstate and sn.idcrawlrecord = jvr.idcrawlrecord
+where  jvr.idcrawlrecord = cast ($P{crawl_id} as integer) and jvr.validationstatus = 'FAILED' and value_type='OVERFLOW') as cantidad) as cantidad_form_error_largo,
+
+(select count(*) from (select distinct sn.name from jatytavalidationrecord  jvr
+join jatytastatename sn on sn.state = jvr.targetstate and sn.idcrawlrecord = jvr.idcrawlrecord
+where  jvr.idcrawlrecord = cast ($P{crawl_id} as integer) and jvr.validationstatus = 'FAILED' and value_type='VALID') as cantidad)  as cantidad_form_error_valido,
+
+(select count(*) from (select distinct sn.name from jatytavalidationrecord  jvr
+join jatytastatename sn on sn.state = jvr.targetstate and sn.idcrawlrecord = jvr.idcrawlrecord
+ where  jvr.idcrawlrecord = cast ($P{crawl_id} as integer) and jvr.validationstatus = 'FAILED' and value_type='INVALID') as cantidad) as cantidad_form_error_invalido,
+
+(select count(*) from ( select min(ts.state) as first_state, count(ts.state)  as count_state, ts.name, count(ts.url) as count_url from jatytastatename ts where  ts.idcrawlrecord = cast( $P{crawl_id} as integer) group by ts.name ) as statenames ) as cantidad_paginas
+
+FROM jatytacrawlrecord
+WHERE idcrawlrecord = cast ($P{crawl_id} as integer)]]>
+	</queryString>
+	<field name="id" class="java.lang.Long"/>
+	<field name="configurationid" class="java.lang.String"/>
+	<field name="configurationname" class="java.lang.String"/>
+	<field name="createtime" class="java.sql.Timestamp"/>
+	<field name="duration" class="org.postgresql.util.PGInterval"/>
+	<field name="idcrawlrecord" class="java.lang.Integer"/>
+	<field name="starttime" class="java.sql.Timestamp"/>
+	<field name="statesnumber" class="java.lang.Integer"/>
+	<field name="test" class="java.lang.String"/>
+	<field name="cantidad_campos" class="java.lang.Long"/>
+	<field name="cantidad_valores" class="java.lang.Long"/>
+	<field name="cantidad_estados" class="java.lang.Long"/>
+	<field name="cantidad_enlaces_rotos" class="java.lang.Long"/>
+	<field name="cantidad_validation_estados" class="java.lang.Long"/>
+	<field name="cantidad_validation" class="java.lang.Long"/>
+	<field name="cantidad_estados_enlaces_rotos" class="java.lang.Long"/>
+	<field name="cantidad_form_error" class="java.lang.Long"/>
+	<field name="cantidad_form_error_vacio" class="java.lang.Long"/>
+	<field name="cantidad_form_error_largo" class="java.lang.Long"/>
+	<field name="cantidad_form_error_valido" class="java.lang.Long"/>
+	<field name="cantidad_form_error_invalido" class="java.lang.Long"/>
+	<field name="cantidad_paginas" class="java.lang.Long"/>
+	<variable name="TOTAL_ERRORS" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{cantidad_form_error_vacio}+$F{cantidad_form_error_largo}+$F{cantidad_form_error_valido}+$F{cantidad_form_error_invalido}+$F{cantidad_enlaces_rotos}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_FORM_ERRORS" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{cantidad_form_error_vacio}+$F{cantidad_form_error_largo}+$F{cantidad_form_error_valido}+$F{cantidad_form_error_invalido}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_PAGES" class="java.lang.Integer" resetType="None" calculation="Count"/>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="72">
+			<frame>
+				<reportElement mode="Opaque" x="-20" y="-20" width="595" height="92" backcolor="#006699" uuid="1eeb42a7-e606-4ebe-ba61-b0c561acb8d1"/>
+				<staticText>
+					<reportElement x="20" y="20" width="453" height="43" forecolor="#FFFFFF" uuid="d65d07f9-a8a1-40b3-8165-6a10bc80bc8a"/>
+					<textElement>
+						<font size="34" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Jatyta Crawl Report]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="23">
+			<staticText>
+				<reportElement x="1" y="0" width="262" height="20" forecolor="#000000" uuid="a7d7b76e-574f-43c7-af98-54a64c2b2be8"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Summary data for Crawl Record:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="-20" y="20" width="595" height="1" forecolor="#666666" uuid="f54634a3-09e0-428b-90f6-f65578a230c1"/>
+			</line>
+			<textField>
+				<reportElement mode="Transparent" x="262" y="0" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="48176578-53cd-4f96-b7fd-4220c1bb734d"/>
+				<textElement verticalAlignment="Top" rotation="None" markup="none">
+					<font fontName="SansSerif" size="14" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{crawl_id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="132">
+			<textField>
+				<reportElement x="128" y="3" width="418" height="20" uuid="0168c423-789a-4606-9fe7-7092c2a6519c"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{configurationname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="128" y="43" width="292" height="20" uuid="e7abd0f4-f87e-42f7-ba60-88ff2f710a6d"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{duration}.getMinutes() + " minutes. "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="128" y="23" width="176" height="20" uuid="025dcb80-61d6-4654-b33e-fcb95bc44e8b"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{starttime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="128" y="63" width="100" height="20" uuid="bd827c1c-27d8-44a2-9cc6-b831d42499a5"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{statesnumber}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="25" y="63" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="2c9310cb-e907-4f01-a123-445678a5f62d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[States Number:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="25" y="23" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="0ee73d04-5ac1-4489-ae80-2a20495992d8"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Start time:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="3" width="125" height="20" uuid="1a282c49-26e8-4753-84f5-0a2a22a34515"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Configuration Name:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="25" y="43" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="7dbc92ca-8d16-438c-bf79-3beca649d361"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Duration:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="400" y="106" width="71" height="20" uuid="1908d1d3-de4d-48df-b676-d6cbae3efa31"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_enlaces_rotos}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="322" y="106" width="78" height="20" uuid="10579f6b-72b8-4347-a387-8c8629c48475"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_FORM_ERRORS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="322" y="86" width="78" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="f00ac1d2-1043-4e8d-8410-c1f6ea1ce96f"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Form Errors]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="400" y="86" width="71" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="64e995f5-9949-47da-b671-661e7a699098"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Links Errors]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="471" y="86" width="75" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="3d2199c7-579f-4e5f-aed1-d0bdcdb19125"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total Errors]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="471" y="106" width="75" height="20" uuid="08d433a3-e168-4a37-a96d-89f835f32342"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_ERRORS}.longValue()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="17" y="106" width="67" height="20" uuid="a937bbcf-1c0e-44d2-be50-9902d5f85893"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_form_error_vacio}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="17" y="86" width="67" height="20" uuid="2eb4b1bc-f6f2-49cd-a810-d4e8a741f1c8"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Empty Form Error]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="84" y="106" width="61" height="20" uuid="7f5588b3-7f81-4ac7-b6c9-b8180a7fe227"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_form_error_largo}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="84" y="86" width="61" height="20" uuid="f2350bf1-48b0-41ff-8f74-08d1f2175196"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Large Form Error]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="144" y="106" width="66" height="20" uuid="61d9235e-577e-445f-abc0-97420cadffb4"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_form_error_valido}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="144" y="86" width="66" height="20" uuid="7ca0c21a-203d-4136-b9e9-0672ec38f501"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Valid Form Error]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="210" y="106" width="64" height="20" uuid="4bc84e7b-bbc9-4901-8372-04f7634daf11"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_form_error_invalido}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="210" y="86" width="64" height="20" uuid="8d0c2deb-0a57-4f38-b2f3-108fd821fb94"/>
+				<box>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Invalid Form Error]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="304" y="23" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="eb98d1db-4cb6-4d22-a5ae-988d39f58c8b"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Test:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement mode="Transparent" x="409" y="23" width="137" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="94da7ac9-1f79-4655-82b8-1d94a59c0213"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{test}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="304" y="63" width="100" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="79a2978e-58bf-4fd2-899d-b0d3fa60825d"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Pages Number:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="409" y="63" width="100" height="20" uuid="5a5563d2-fa79-44f8-9455-7341de428e68"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_paginas}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="147">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="183" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="84f046aa-d1e8-4bf5-91f8-fe6f28dd989a"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Form Values Summary]]></text>
+			</staticText>
+			<line>
+				<reportElement x="-20" y="19" width="595" height="1" forecolor="#666666" uuid="54ac5be8-23fc-4f0e-9eba-310470d30b53"/>
+			</line>
+			<pieChart>
+				<chart>
+					<reportElement x="180" y="40" width="183" height="107" uuid="b77228dc-8e1b-4861-b1f0-8cfa0bdb25ef"/>
+					<chartTitle>
+						<font isBold="true"/>
+						<titleExpression><![CDATA["Values per Type"]]></titleExpression>
+					</chartTitle>
+					<chartSubtitle/>
+					<chartLegend/>
+				</chart>
+				<pieDataset>
+					<dataset>
+						<datasetRun subDataset="FormValues" uuid="9c9dbfcb-6567-42ac-8291-72441888268d">
+							<datasetParameter name="crawl_id">
+								<datasetParameterExpression><![CDATA[$P{crawl_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+					</dataset>
+					<keyExpression><![CDATA[$F{type}]]></keyExpression>
+					<valueExpression><![CDATA[$V{REPORT_COUNT}]]></valueExpression>
+				</pieDataset>
+				<piePlot labelFormat="{2}" legendLabelFormat="{0}">
+					<plot/>
+					<itemLabel/>
+				</piePlot>
+			</pieChart>
+			<staticText>
+				<reportElement mode="Transparent" x="16" y="20" width="125" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="9696505a-389f-4b59-957f-c35104e3c0a4"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Form States Number:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="144" y="20" width="39" height="20" uuid="939ad3e7-16d6-4de7-8cca-69b4cd1841cf"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_estados}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="194" y="20" width="125" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="d77180cc-052b-4da9-8e65-ef0a26015a7e"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Form Values Number:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="322" y="20" width="41" height="20" uuid="c235d3ea-ce75-4628-9244-5b19494da380"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_valores}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="388" y="20" width="125" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="ec556200-cdf6-41c7-99fb-1a897433a450"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Form Fields Number:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="516" y="20" width="39" height="20" uuid="27fa1f6c-7bee-4898-badf-6cb61dd37818"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_campos}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="227" splitType="Prevent">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="228" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="5f12c96e-a01a-4f09-8fb4-464d35a5b6cf"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Validation Forms Summary]]></text>
+			</staticText>
+			<line>
+				<reportElement x="-20" y="19" width="595" height="1" forecolor="#666666" uuid="2be7f3e3-78f5-4ebb-8d7a-1b58693ae606"/>
+			</line>
+			<textField>
+				<reportElement x="217" y="20" width="46" height="20" uuid="d5ff4c85-0e44-4d5e-b988-50563797e803"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_validation}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="58" y="20" width="157" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="aeedd258-cfa5-4ec8-a0fb-3119e3faf8a5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Validations Fields Number:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="443" y="20" width="48" height="20" uuid="98b18c03-d602-47dd-b6a7-7d3ee42ef795"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_validation_estados}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="274" y="20" width="167" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="701b2d31-050b-4169-b409-a06f21585ac6"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Validations States Number:]]></text>
+			</staticText>
+			<pieChart>
+				<chart>
+					<reportElement x="177" y="40" width="200" height="100" uuid="b8b79aa2-0b66-4047-bfee-fedab8eca316"/>
+					<chartTitle>
+						<titleExpression><![CDATA["Validation per status"]]></titleExpression>
+					</chartTitle>
+					<chartSubtitle/>
+					<chartLegend/>
+				</chart>
+				<pieDataset>
+					<dataset>
+						<datasetRun subDataset="ValidationRecords" uuid="5a42830c-94d3-4044-b384-a52d602d7145">
+							<datasetParameter name="crawl_id">
+								<datasetParameterExpression><![CDATA[$P{crawl_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+					</dataset>
+					<keyExpression><![CDATA[$F{validationstatus}]]></keyExpression>
+					<valueExpression><![CDATA[$V{REPORT_COUNT}]]></valueExpression>
+				</pieDataset>
+				<piePlot labelFormat="{2}">
+					<plot/>
+					<itemLabel/>
+				</piePlot>
+			</pieChart>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="141" width="183" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="7211d01f-d554-41c7-9207-d53c02380a28"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Validation Failed]]></text>
+			</staticText>
+			<crosstab>
+				<reportElement x="0" y="141" width="553" height="84" uuid="8cbe5f56-fafb-4028-a1fb-a80ac3e0adf8"/>
+				<crosstabDataset isDataPreSorted="true">
+					<dataset>
+						<datasetRun subDataset="ValidationFailed" uuid="9e9a87eb-5870-4c2f-bbc7-5a9bb4ba0121">
+							<datasetParameter name="crawl_id">
+								<datasetParameterExpression><![CDATA[$P{crawl_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+					</dataset>
+				</crosstabDataset>
+				<rowGroup name="targetname" width="236" totalPosition="End">
+					<bucket class="java.lang.String">
+						<bucketExpression><![CDATA[$F{targetname}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="236" height="25" uuid="0c0fac25-659d-4829-8996-f8a62fc9b5e4"/>
+								<textElement textAlignment="Left">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{targetname}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents backcolor="#E6F3FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<staticText>
+								<reportElement x="166" y="0" width="70" height="25" uuid="04c86888-e162-4ebc-91e1-a48f240918fa"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font isBold="true"/>
+								</textElement>
+								<text><![CDATA[Total]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<columnGroup name="value_type" height="30" totalPosition="End">
+					<bucket class="java.lang.String">
+						<bucketExpression><![CDATA[$F{value_type}]]></bucketExpression>
+					</bucket>
+					<crosstabColumnHeader>
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="30" uuid="8ae542cd-9cdf-4242-adc1-b2cb7099d5ca"/>
+								<textElement>
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{value_type}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabColumnHeader>
+					<crosstabTotalColumnHeader>
+						<cellContents backcolor="#E6F3FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="50" height="30" uuid="9cededd0-167c-43e7-821e-d24523681023"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font isBold="true"/>
+								</textElement>
+								<text><![CDATA[Total]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabTotalColumnHeader>
+				</columnGroup>
+				<measure name="value_typeMeasure" class="java.lang.Integer" calculation="Count">
+					<measureExpression><![CDATA[$F{value_type}]]></measureExpression>
+				</measure>
+				<crosstabCell width="50" height="25">
+					<cellContents>
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="50df7460-2f52-4d2c-bc46-fcc5bf151741"/>
+							<textElement verticalAlignment="Middle"/>
+							<textFieldExpression><![CDATA[$V{value_typeMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell height="25" rowTotalGroup="targetname">
+					<cellContents backcolor="#E6F3FF" mode="Opaque">
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="f75d3123-ce12-4e1c-b002-554911af6807"/>
+							<textElement verticalAlignment="Middle">
+								<font isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{value_typeMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="50" columnTotalGroup="value_type">
+					<cellContents backcolor="#E6F3FF" mode="Opaque">
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="9a06e286-3550-44ba-93ae-8aa2609115f0"/>
+							<textElement verticalAlignment="Middle">
+								<font isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{value_typeMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell rowTotalGroup="targetname" columnTotalGroup="value_type">
+					<cellContents backcolor="#E6F3FF" mode="Opaque">
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="b3c9b833-1bba-43e3-90f9-f08af60b5de7"/>
+							<textElement verticalAlignment="Middle">
+								<font isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{value_typeMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+			</crosstab>
+		</band>
+		<band height="83" splitType="Prevent">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="183" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="dfbbe8f0-5597-40a3-91c4-2b045ab294af"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Validation Success]]></text>
+			</staticText>
+			<crosstab>
+				<reportElement x="1" y="2" width="555" height="81" uuid="29635d82-ddf8-4399-87c1-26be33166bb2"/>
+				<crosstabDataset isDataPreSorted="true">
+					<dataset>
+						<datasetRun subDataset="ValidationSuccess" uuid="6987f64d-f143-4b51-a0e6-b4cb07d418b5">
+							<datasetParameter name="crawl_id">
+								<datasetParameterExpression><![CDATA[$P{crawl_id}]]></datasetParameterExpression>
+							</datasetParameter>
+							<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+						</datasetRun>
+					</dataset>
+				</crosstabDataset>
+				<rowGroup name="targetname" width="236" totalPosition="End">
+					<bucket class="java.lang.String">
+						<bucketExpression><![CDATA[$F{targetname}]]></bucketExpression>
+					</bucket>
+					<crosstabRowHeader>
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="236" height="25" uuid="95f886e3-d39a-45e0-9dac-c3186f0eb2e5"/>
+								<textElement textAlignment="Left">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{targetname}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabRowHeader>
+					<crosstabTotalRowHeader>
+						<cellContents backcolor="#E6F3FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<staticText>
+								<reportElement x="166" y="0" width="70" height="25" uuid="4775e955-4186-443a-8068-1753f5597505"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font isBold="true"/>
+								</textElement>
+								<text><![CDATA[Total]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabTotalRowHeader>
+				</rowGroup>
+				<columnGroup name="value_type" height="30" totalPosition="End">
+					<bucket class="java.lang.String">
+						<bucketExpression><![CDATA[$F{value_type}]]></bucketExpression>
+					</bucket>
+					<crosstabColumnHeader>
+						<cellContents backcolor="#BFE1FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<textField>
+								<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="30" uuid="c1b47f47-0400-47b2-8807-65371eedb641"/>
+								<textElement>
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$V{value_type}]]></textFieldExpression>
+							</textField>
+						</cellContents>
+					</crosstabColumnHeader>
+					<crosstabTotalColumnHeader>
+						<cellContents backcolor="#E6F3FF" mode="Opaque">
+							<box>
+								<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+							</box>
+							<staticText>
+								<reportElement x="0" y="0" width="50" height="30" uuid="cefd92b2-46ac-415a-9def-058ad289e804"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font isBold="true"/>
+								</textElement>
+								<text><![CDATA[Total]]></text>
+							</staticText>
+						</cellContents>
+					</crosstabTotalColumnHeader>
+				</columnGroup>
+				<measure name="targetnameMeasure" class="java.lang.Integer" calculation="Count">
+					<measureExpression><![CDATA[$F{value_type}]]></measureExpression>
+				</measure>
+				<crosstabCell width="50" height="25">
+					<cellContents>
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="76be2667-7cad-421e-8166-9e52271e7487"/>
+							<textElement verticalAlignment="Middle"/>
+							<textFieldExpression><![CDATA[$V{targetnameMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="50" height="25" rowTotalGroup="targetname">
+					<cellContents backcolor="#E6F3FF" mode="Opaque">
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="3819cead-33cb-4a3c-aee4-c2086c9ae359"/>
+							<textElement verticalAlignment="Middle">
+								<font isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{targetnameMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="50" height="25" columnTotalGroup="value_type">
+					<cellContents backcolor="#E6F3FF" mode="Opaque">
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="a32b86b7-a4f7-4734-ba2b-63f4ce209abb"/>
+							<textElement verticalAlignment="Middle">
+								<font isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{targetnameMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+				<crosstabCell width="50" height="25" rowTotalGroup="targetname" columnTotalGroup="value_type">
+					<cellContents backcolor="#E6F3FF" mode="Opaque">
+						<box>
+							<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+						</box>
+						<textField>
+							<reportElement style="Crosstab Data Text" x="0" y="0" width="50" height="25" uuid="b2e9e813-ff74-4fa2-abe4-39f6c173e943"/>
+							<textElement verticalAlignment="Middle">
+								<font isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$V{targetnameMeasure}]]></textFieldExpression>
+						</textField>
+					</cellContents>
+				</crosstabCell>
+			</crosstab>
+		</band>
+		<band height="100" splitType="Prevent">
+			<line>
+				<reportElement x="-20" y="19" width="595" height="1" forecolor="#666666" uuid="3fd271c6-aa81-4e5b-81ee-34c86fa09ddd"/>
+			</line>
+			<staticText>
+				<reportElement mode="Transparent" x="36" y="20" width="146" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="f4c374d3-7c78-4165-a15b-91952a574c02"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Broken Links Number:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="185" y="20" width="45" height="20" uuid="e98cea4c-51c9-4b9b-9543-28490f0e54a2"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_enlaces_rotos}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="422" y="20" width="41" height="20" uuid="227f7ba7-422c-4a01-b73b-026298342792"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{cantidad_estados_enlaces_rotos}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement mode="Transparent" x="237" y="20" width="183" height="20" forecolor="#000000" backcolor="#FFFFFF" uuid="b159b5dd-1628-4745-a74a-8820ac66fef4"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="SansSerif" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Broken Links States Number:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement key="table 1" style="table 1" x="0" y="40" width="555" height="52" isRemoveLineWhenBlank="true" uuid="a8721bc8-a1cb-4d40-95a3-098a6a61b411">
+					<printWhenExpression><![CDATA[$F{cantidad_enlaces_rotos}.intValue()> 0]]></printWhenExpression>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="BrokenLinks" uuid="a5754000-9f96-48fa-83ea-47f917fc516c">
+						<datasetParameter name="crawl_id">
+							<datasetParameterExpression><![CDATA[$P{crawl_id}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="168" uuid="26155d31-9bd9-4fae-b0cc-b040e9cd3e60">
+						<jr:columnHeader style="table 1_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="168" height="30" uuid="d6eb6be9-3054-491f-84e1-ca75fed9752c"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<text><![CDATA[Link]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 1_TD" height="30" rowSpan="1">
+							<image scaleImage="Clip" hAlign="Center" vAlign="Middle" isLazy="true" onErrorType="Icon">
+								<reportElement x="0" y="0" width="168" height="30" uuid="21dc76cb-f840-4196-90bf-ab93e19fb09e"/>
+								<imageExpression><![CDATA[JRImageRenderer.getInstance(IOUtils.toByteArray($F{image}))]]></imageExpression>
+							</image>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="168" uuid="54cc2605-aa3b-4d69-878e-0b44c1db4734">
+						<jr:columnHeader style="table 1_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="168" height="30" uuid="ccb82c9a-5a86-44a2-896b-61ccf2fb15a8"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<text><![CDATA[State caller]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 1_TD" height="30" rowSpan="1">
+							<textField>
+								<reportElement x="0" y="0" width="168" height="30" uuid="7a8a5a59-25f2-4bcf-8bb4-451c624975f6"/>
+								<textElement>
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{callername}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="218" uuid="5244c8d3-2472-4c14-8020-00930c194c1d">
+						<jr:columnHeader style="table 1_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement mode="Transparent" x="0" y="0" width="218" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="02d4b442-b6e7-450f-8798-4d51b50af23e"/>
+								<box>
+									<topPen lineWidth="0.25"/>
+									<leftPen lineWidth="0.25"/>
+									<bottomPen lineWidth="0.25"/>
+									<rightPen lineWidth="0.25"/>
+								</box>
+								<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+									<font fontName="SansSerif" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+									<paragraph lineSpacing="Single"/>
+								</textElement>
+								<text><![CDATA[URL]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell height="30" rowSpan="1">
+							<textField pattern="" isBlankWhenNull="false">
+								<reportElement mode="Transparent" x="0" y="0" width="218" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="5c83810f-0f53-4ec1-8061-40d5fb38219a"/>
+								<box>
+									<topPen lineWidth="0.25"/>
+									<leftPen lineWidth="0.25"/>
+									<bottomPen lineWidth="0.25"/>
+									<rightPen lineWidth="0.25"/>
+								</box>
+								<textElement textAlignment="Left" verticalAlignment="Top" rotation="None" markup="none">
+									<font fontName="SansSerif" size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+									<paragraph lineSpacing="Single"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{urlbroken}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<staticText>
+				<reportElement mode="Opaque" x="3" y="-1" width="183" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="68ce3db8-77e1-4318-a3aa-8702ba5d536e"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Error Pages Summary]]></text>
+			</staticText>
+		</band>
+		<band height="38" splitType="Immediate">
+			<staticText>
+				<reportElement mode="Opaque" x="3" y="0" width="183" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="9a7e5139-2933-4c3d-8562-2f5aefa3259c"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[States Summary]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement key="table 2" style="table 2" x="3" y="20" width="550" height="12" uuid="ea6b02a3-1017-4fd7-8e2a-f7ed77769531"/>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="StatesNames" uuid="00281697-4ff6-4f3a-96eb-cabe41c3125e">
+						<datasetParameter name="crawl_id">
+							<datasetParameterExpression><![CDATA[$P{crawl_id}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="56" uuid="749de643-8913-48d8-9fa2-229c81f847d9">
+						<jr:columnHeader height="30" rowSpan="1">
+							<box>
+								<topPen lineWidth="0.5"/>
+								<leftPen lineWidth="0.5"/>
+								<bottomPen lineWidth="0.5"/>
+								<rightPen lineWidth="0.5"/>
+							</box>
+							<staticText>
+								<reportElement style="table 2_CH" x="0" y="0" width="56" height="30" uuid="84055a2f-ab6b-4b8f-9387-82817af1a981"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<text><![CDATA[Number]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell height="30" rowSpan="1">
+							<box>
+								<topPen lineWidth="0.5"/>
+								<leftPen lineWidth="0.5"/>
+								<bottomPen lineWidth="0.5"/>
+								<rightPen lineWidth="0.5"/>
+							</box>
+							<textField>
+								<reportElement x="0" y="0" width="56" height="28" uuid="685aa257-6a78-4692-bc8d-14f4929a6204"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="56" uuid="4c913bba-e854-431a-99b9-8637ac256e74">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="56" height="30" uuid="50034a31-505a-4a49-a6cc-6c353d012ec0"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<text><![CDATA[state count]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="30" rowSpan="1">
+							<textField>
+								<reportElement x="0" y="0" width="56" height="28" uuid="e77e0e62-3fa5-4e2d-8951-6f8ec54552c6"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<textFieldExpression><![CDATA[$F{count_state}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="289" uuid="a6c36920-1bce-4147-8786-271b7c2d834c">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="289" height="30" uuid="06ed95f5-bd9e-4ddb-9707-2bd62078566c"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<text><![CDATA[name]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="30" rowSpan="1">
+							<textField>
+								<reportElement x="0" y="0" width="289" height="28" uuid="4f57e3bb-70ab-4eb6-bfc3-6f5ba0b7ed5b"/>
+								<textElement>
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="78" uuid="56942030-6059-4b99-a9e6-7d5a99e9a5fe">
+						<jr:columnHeader style="table 2_CH" height="30" rowSpan="1">
+							<staticText>
+								<reportElement x="0" y="0" width="77" height="30" uuid="b5c85c3d-e62b-488f-81f8-fbd8a5a638a5"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle"/>
+								<text><![CDATA[url count]]></text>
+							</staticText>
+						</jr:columnHeader>
+						<jr:detailCell style="table 2_TD" height="30" rowSpan="1">
+							<textField>
+								<reportElement x="0" y="0" width="77" height="28" uuid="4675fc5d-3517-4936-a37d-4c69b2e9272b"/>
+								<textElement textAlignment="Center" verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{count_url}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
+			<line>
+				<reportElement x="-20" y="19" width="595" height="1" uuid="93969b3e-c7f4-4bfd-8fca-475cb2eb22c8"/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="19">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="4" width="515" height="13" backcolor="#E6E6E6" uuid="86245a06-7a23-4980-8f31-21e17a2f9d6f"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="515" y="4" width="40" height="13" backcolor="#E6E6E6" uuid="6c2dcac6-e781-4a46-8733-6e3fb180401c"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy hh:mm:ss">
+				<reportElement x="0" y="4" width="183" height="13" uuid="47265eca-0e25-4142-a29b-a9b39dc489ba"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="25">
+			<staticText>
+				<reportElement mode="Opaque" x="186" y="0" width="183" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="976783da-5820-40bd-bf85-55f4aeaa3da2"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[End of report]]></text>
+			</staticText>
+			<line>
+				<reportElement x="-20" y="19" width="595" height="1" forecolor="#666666" uuid="37f6cba0-79f4-4963-93f1-e3853c8ac070"/>
+			</line>
+		</band>
+	</summary>
+	<noData>
+		<band height="65">
+			<staticText>
+				<reportElement x="83" y="14" width="388" height="35" uuid="61fa4247-676d-4e91-845d-0a200576f20b"/>
+				<textElement textAlignment="Center">
+					<font size="30"/>
+				</textElement>
+				<text><![CDATA[Sin datos en el reporte.]]></text>
+			</staticText>
+		</band>
+	</noData>
+</jasperReport>

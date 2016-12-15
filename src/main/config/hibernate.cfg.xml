@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+  <session-factory>
+    <!-- Database connection settings -->
+    <property name="connection.driver_class">org.postgresql.Driver</property>
+    <property name="connection.url">jdbc:postgresql://localhost:5432/kbjatyta</property>
+    <property name="connection.username">jatyta</property>
+    <property name="connection.password">jatyta01</property>
+    <!-- JDBC connection pool (use the built-in) -->
+    <property name="connection.pool_size">1</property>
+    <!-- SQL dialect -->
+    <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+    <!-- Enable Hibernate's automatic session context management -->
+    <property name="current_session_context_class">thread</property>
+    <!-- Disable the second-level cache -->
+    <property name="cache.provider_class">org.hibernate.cache.internal.NoCacheProvider</property>
+    <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
+    <property name="hibernate.c3p0.min_size">5</property>
+    <property name="hibernate.c3p0.max_size">200</property>
+    <property name="hibernate.c3p0.timeout">300</property>
+    <property name="hibernate.c3p0.max_statements">50</property>
+    <property name="hibernate.c3p0.idle_test_period">3000</property>
+    <!-- Echo all executed SQL to stdout -->
+    <property name="show_sql">false</property>
+    <property name="format_sql">true</property>
+    <!-- Drop and re-create the database schema on startup -->
+    <property name="hbm2ddl.auto">update</property>
+    <!-- Mapping class. -->
+    <mapping
+      class="com.crawljax.web.jatyta.knowledgebase.db.model.entities.NativeType" />
+    <mapping
+      class="com.crawljax.web.jatyta.knowledgebase.db.model.entities.ItemType" />
+    <mapping
+      class="com.crawljax.web.jatyta.knowledgebase.db.model.entities.ItemProp" />
+    <mapping
+      class="com.crawljax.web.jatyta.knowledgebase.db.model.entities.PropValue" />
+    <mapping
+      class="com.crawljax.web.jatyta.knowledgebase.db.model.entities.Schema" />
+    <mapping
+      class="com.crawljax.web.jatyta.knowledgebase.db.model.entities.PropName"/>  
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaCrawlRecord" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaFormValueRecord" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaValidationConfiguration" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaCrawlConfiguration" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaValidationRecord" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaBrokenState" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaBrokenLinksConfiguration" />
+    <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaStateName" />
+     <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaFormFieldRecord" />  
+     <mapping
+      class="com.crawljax.web.jatyta.model.entities.JatytaFormConfiguration" />
+  </session-factory>
+</hibernate-configuration>

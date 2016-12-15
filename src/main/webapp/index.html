@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+    <title>Jatyta Web UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link href="css/wrap.css" rel="stylesheet">
+	<link href="css/chosen.css" rel="stylesheet">
+	<link href="css/jatyta.css" rel="stylesheet">
+	<link href="css/pikaday.css" rel="stylesheet">
+
+	
+	 <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+	<script type="text/x-handlebars">
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">{{partial header}}</div>
+		</div>
+		<div class="container">
+			<div class="row">
+				{{partial sidebar}}
+				<div class="span9">
+					{{outlet}}
+					{{outlet 'modal'}}
+				</div>
+			</div>
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_header">
+		<div class="container">
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+				<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+			</a>
+			<a class="brand" target="_blank">Jatyta Web-UI</a>
+			<div class="nav-collapse collapse">
+				<ul class="nav">
+					<li><a href="#/configurations">Configurations</a></li>
+					<!--
+					<li><a href="#/plugins">Plugins</a></li>
+					-->
+					<li><a href="#/jatyta_management">Jatyta</a></li>
+					<li><a href="#/crawlrecords">History</a></li>
+					<li><a href="#" {{action 'openModal' 'about-modal'}}>About</a></li>
+				</ul>
+			</div>
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_sidebar">
+		<div class="span3">
+			{{render "breadcrumb"}}
+			{{render "sidenav"}}
+			{{render "execution_queue"}}
+			{{render "notifications"}}
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="breadcrumb">
+		{{view App.BreadcrumbView}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="sidenav">
+		{{#if sidenav}}
+			<div class="well sidebar-nav">
+				{{view App.SideNavView}}
+			</div>
+		{{/if}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="execution_queue">
+		<div class="well sidebar-nav">
+			<ul class="nav nav-list">
+				<li class="nav-header">Crawl Execution Queue</li>
+				{{#each controllers.application.executionQueue}}
+					<li><span>{{#link-to 'crawlrecord' this}}#{{id}}{{/link-to}} {{configurationName}} - <i>{{crawlStatus}}</i></span></li>
+				{{else}}
+					<li><i>empty</i></li>
+				{{/each}}
+			</ul>
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="notifications">
+		<div id="notification" class="alert alert-mute">Notifications</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configurations">
+		{{outlet}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configurations/index">
+		<table class="table table-striped restricted">
+			<thead>
+				<tr><th>Name</th><th>Site</th><th>Last Crawl</th><th>Last Duration</th></tr>
+			</thead>
+			<tbody>
+				{{#each controller}}
+				<tr>
+					<td>{{#link-to "configuration" content}}{{content.name}}{{/link-to}}</td>
+					<td><a {{bind-attr href="configuration.url"}} target="_blank">{{content.url}}</a></td>
+					<td>{{lastCrawlFormatted}}</td>
+					<td>{{lastDurationFormatted}}</td>
+				</tr>
+				{{else}}<tr><td colspan="5">No available configurations.</td></tr>{{/each}}
+			</tbody>
+		</table>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration">
+		<ul class="nav nav-tabs">
+			{{#view App.NavView route='configuration.index' }}<a href='#' {{action 'moveTo' view.route}}>Overview</a>{{/view}}
+			{{#view App.NavView route='configuration.rules' }}<a href='#' {{action 'moveTo' view.route}}>Crawl Rules</a>{{/view}}
+			
+			{{#view App.NavView route='configuration.assertions' }}<a href='#' {{action 'moveTo' view.route}}>Assertions</a>{{/view}}
+			<!--
+			{{#view App.NavView route='configuration.plugins' }}<a href='#' {{action 'moveTo' view.route}}>Plugins</a>{{/view}}
+			-->
+			{{#view App.NavView route='configuration.jatyta' }}<a href='#' {{action 'moveTo' view.route}}>Jatyta</a>{{/view}}
+			{{#view App.NavView route='configuration.forms' }}<a href='#' {{action 'moveTo' view.route}}>Forms</a>{{/view}}
+			{{#view App.NavView route='configuration.login' }}<a href='#' {{action 'moveTo' view.route}}>Login</a>{{/view}}
+			{{#view App.NavView route='configuration.validation' }}<a href='#' {{action 'moveTo' view.route}}>Validation</a>{{/view}}
+			{{#view App.NavView route='configuration.brokenlinks' }}<a href='#' {{action 'moveTo' view.route}}>Broken Links</a>{{/view}}
+			
+		</ul>
+		{{outlet}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/index">
+		{{partial config_general}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_config_general">
+		<form id="config_form" class="form-horizontal">
+		<fieldset>
+			<legend>General Information</legend>
+			{{#if content.id}}
+				{{view App.FormField label="Name: " valueBinding="content.name"}}
+			{{else}}
+				{{view App.FormTextField label="Name: " valueBinding="content.name" placeholder="Configuration Name" required="true" errorText="This field is Required"}}
+			{{/if}}
+			{{view App.FormTextField label="Site: " valueBinding="content.url" placeholder="http://www.example.com" type="url" 
+				required="true" pattern="(http|https)://.+" errorText="Must provide a valid url. http://www.example.com"}}
+			{{view App.FormSelect label="Browser: " valueBinding="content.browser" contentBinding="App.browsers" optionValuePath="content.value"
+				optionLabelPath="content.name"}}
+			{{view App.FormTextField type="number" min="1" label="Number of Browsers: " valueBinding="content.numBrowsers"}}
+			{{view App.FormCheckbox label="Boot Browsers at Start" checkedBinding="content.bootBrowser"}}
+			{{view App.FormTextField type="number" min="0" label="Maximum Crawl Depth: " valueBinding="content.maxDepth"}}
+			{{view App.FormTextField type="number" min="0" label="Maximum Crawl States: " valueBinding="content.maxState"}}
+			{{view App.FormTextField type="number" min="0" label="Maximum Duration(min): " valueBinding="content.maxDuration"}}
+			{{view App.FormTextField type="number" min="0" label="Event Wait Time(ms): " valueBinding="content.eventWaitTime"}}
+			{{view App.FormTextField type="number" min="0" label="Reload Wait Time(ms): " valueBinding="content.reloadWaitTime"}}
+			{{view App.FormCheckbox label="Click Elements Once" checkedBinding="content.clickOnce"}}
+			{{view App.FormSelect label="Proxy Type: " valueBinding="content.proxyType" contentBinding="App.proxyTypes" optionValuePath="content.value"
+				optionLabelPath="content.name"}}
+			{{view App.FormTextField label="Proxy Host Name: " valueBinding="content.proxyHostName" placeholder="proxy.example.com" 
+				required="false" pattern=".+" errorText="Must provide a valid host name. proxy.example.com"}}
+			{{view App.FormTextField type="number" min="0" max="9999" label="Proxy Port: " valueBinding="content.proxyPort"}}
+
+		</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/rules">
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Click Rules</legend>
+				<label class="checkbox">
+					{{view Ember.Checkbox checkedBinding="content.clickDefault"}}
+					 Click Default Elements</label>
+				{{#unless content.clickDefault}}
+					<br />{{render 'click_rules' content.clickRules}}
+				{{/unless}}
+			</fieldset><br />
+			<fieldset>
+				<legend>Page Conditions</legend>
+				{{render 'conditions' content.pageConditions}}
+			</fieldset><br />
+			<fieldset>
+				<legend>State Filters</legend>
+				{{render 'comparators' content.comparators}}
+			</fieldset><br />
+			<fieldset>
+				<legend>Form Field Input Values</legend>
+				<label class="checkbox">
+					{{view Ember.Checkbox checkedBinding="content.randomFormInput"}}
+					Use Random Values in Form Fields
+				</label>
+				{{render 'form_inputs' content.formInputValues}}
+			</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="click_rules">
+		{{#if content}}
+			<table class="table table-condensed">
+				{{#each controller}}
+					<tr>
+						<td width="30px">{{view App.FormSelect valueBinding='content.rule' contentBinding='App.clickType' optionValuePath="content.value"
+							optionLabelPath="content.name" inputClassNames='input-small' isForm=''}}</td>
+						<td width="30px">{{view App.FormSelect valueBinding='content.elementTag' contentBinding='App.tags' inputClassNames='input-small' isForm=''}}</td>
+						<td>
+							{{#if content.conditions}}
+							<table class="table table-striped table-condensed" style="margin-bottom: 0px;">
+								{{#each con in content.conditions}}
+								<tr>
+									<td>{{view App.FormSelect valueBinding='con.condition' contentBinding="App.clickConditions" optionValuePath="content.value"
+										optionLabelPath="content.name" isForm=''}}</td>
+									<td>{{view App.FormTextField valueBinding='con.expression' isForm='' required='true'
+										inputClassNames='input-xlarge' errorText='This field is Required'}}</td>
+									<td><a href="#" {{action 'removeCondition' con}}><i class="icon-remove"></i></a></td>
+								</tr>
+								{{/each}}
+							</table>
+							{{/if}}
+							<a href="#" {{action 'addCondition'}}><i class="icon-plus"></i>Condition</a>
+						</td>
+						<td><a href="#" {{action 'remove' content}}>Remove</a></td>
+					</tr>
+				{{/each}}
+			</table>
+		{{/if}}
+		<a href="#" {{action 'add'}}> Add a New Click Rule</a>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="conditions">
+		{{#if content}}
+			<table class="table table-striped table-condensed">
+				{{#each controller}}
+					<tr>
+						<td>{{view App.FormSelect valueBinding='content.condition' contentBinding="App.pageConditions" optionValuePath="content.value"
+							optionLabelPath="content.name" isForm=''}}</td>
+						<td>{{view App.FormTextField valueBinding='content.expression' isForm='' required='true'
+							inputClassNames='input-xlarge' errorText='This field is Required'}}</td>
+						<td><a href="#" {{action 'remove' content}}>Remove</a></td>
+					</tr>
+				{{/each}}
+			</table>
+		{{/if}}
+		<a href="#" {{action 'add'}}> Add a New Condition</a>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="comparators">
+		{{#if content}}
+			<table class="table table-striped table-condensed">
+				{{#each controller}}
+					<tr>
+						<td>{{view App.FormSelect valueBinding='content.type' contentBinding="App.comparators" optionValuePath="content.value"
+							optionLabelPath="content.name" isForm=''}}</td>
+						<td>{{#if this.needsExpression}}{{view App.FormTextField valueBinding='content.expression' isForm='' required='true'
+							inputClassNames='input-xlarge' errorText='This field is Required'}}{{/if}}</td>
+						<td><a href="#" {{action 'remove' content}}>Remove</a></td>
+					</tr>
+				{{/each}}
+			</table>
+		{{/if}}
+		<a href="#" {{action 'add'}}> Add a New Filter</a>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="form_inputs">
+		{{#if content}}
+			<table class="table table-striped table-condensed">
+				<thead>
+					<tr><th>Element Id/Name</th><th>Value</th><th></th></tr>
+				</thead>
+				<tbody>
+					{{#each controller}}
+						<tr>
+							<td>{{view App.FormTextField valueBinding='content.name' required='true' isForm='' errorText='This field is Required'}}</td>
+							<td>{{view App.FormTextField valueBinding='content.value' isForm='' inputClassNames='input-xlarge'}}</td>
+							<td><a href="#" {{action 'remove' content}}>Remove</a></td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+		{{/if}}
+		<a href="#" {{action 'add'}}> Add a New Field</a>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/assertions">
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Invariants</legend>
+				{{render 'conditions' content.invariants}}
+			</fieldset>
+		</form>
+	</script>
+	
+
+	
+	<script type="text/x-handlebars" data-template-name="configuration/plugins">
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				{{render 'plugins' content.plugins}}
+			</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="plugins">
+		{{#if content}}
+			{{#each controller}}
+				<div class="well">
+					<div class="row">
+						<div class="span4"><legend>{{plugin.name}}</legend></div>
+						<div class="pull-right">
+								{{view App.PluginSelect valueBinding='content.id' onChange='selectionChanged' contentBinding="selectItems" optionValuePath="content.value"
+											optionLabelPath="content.name" isForm='' required="true" errorText="Please select a plugin"}}</div>
+						
+					</div>
+					{{#each parameter in content.parameters}}
+						{{#ifEqual parameter.type textbox}}
+							{{view App.FormTextField valueBinding="parameter.value" label="{{dynamicLabel}}: " dynamicLabel="displayName" contentBinding="parameter"}}
+						{{/ifEqual}}
+						{{#ifEqual parameter.type checkbox}}
+							{{view App.FormCheckbox checkedBinding="parameter.value" label="{{dynamicLabel}}" dynamicLabel="displayName" contentBinding="parameter"}}
+						{{/ifEqual}}
+						{{#ifEqual parameter.type select}}
+							{{view App.FormSelect valueBinding="parameter.value" label="{{dynamicLabel}}: " dynamicLabel="displayName" contentBinding="parameter" optionsPath="content.options" optionValuePath="content.value" optionLabelPath="content.name"}}
+						{{/ifEqual}}
+					{{/each}}
+					<div class="row">
+						<div class="pull-right"><a href="#" {{action 'remove' content}} style="float:right;"><i class="icon-remove"></i> Remove Plugin</a></div>
+					</div>
+				</div>
+				
+			{{/each}}
+		{{/if}}
+		<a href="#" {{action 'add'}}><i class="icon-plus"></i> Add Plugin</a>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/jatyta">
+			
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Jatyta Crawl Configuration</legend>
+
+				{{view App.FormSelect label="Form Value Filter: " valueBinding="content.formValuesFilter" contentBinding="App.formValueTypes" optionValuePath="content.value" optionLabelPath="content.name"}}
+				{{view App.FormTextField  label="State Title under Xpath: "  valueBinding='content.titleFormUnderXpath' }}
+				{{view App.FormSelect label="Menu Item Tag:" valueBinding="content.menuItemTag" contentBinding="App.tags" optionValuePath="content" optionLabelPath="content"}}
+				{{view App.FormTextField  label="Menu under Xpath: "  valueBinding='content.menuUnderXpath' }}
+				{{view App.FormTextField type="number" min="1" max="255" label="Maximum Values per Form Field: "  valueBinding='content.maxValuesForFormInput' required='true' errorText='This field is Required'}}
+				{{view App.FormSelect label="Search in schema Name: " valueBinding="content.idschema" contentBinding="schemasSelect" optionValuePath="content.value" optionLabelPath="content.name"}}
+				{{view App.FormCheckbox label="WhiteBox enabled" checkedBinding="content.whiteBoxTest"}}
+				{{view App.FormCheckbox label="Ajust JSF auto generated ID " checkedBinding="content.ajustJSFAutoGeneratedId"}}
+				<div class="ember-view  control-group">
+					<div class="ember-view control-label">
+						<label>Estimated Crawl Time (ms):</label>
+					</div>
+					{{view App.NumberField  valueBinding='content.estimatedTime' disabled="true" }}
+					<button type="button" class="btn btn-primary"  {{action 'estimateTime' content}} title=>Calculate</button>
+				</div>
+			</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/forms">
+			
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Jatyta Form Configuration</legend>
+
+				{{view App.FormTextField type="number" min="1" max="255" label="Maximum Default Text Size (Characters): " valueBinding="content.maxTextFieldSize"}}
+				{{view App.FormTextField type="number" min="1" max="255" label="Maximum Default Number Size (Digits): " valueBinding="content.maxNumberFieldSize"}}
+				{{view App.FormSelect label="Date Value Pattern: " valueBinding="content.dateValuePattern" contentBinding="App.datePatternSelect" optionValuePath="content" optionLabelPath="content"}}
+				
+				
+			</fieldset>
+
+				<a href="#" {{action 'newForm' selectedConfigId formList }}><i class="icon-plus"></i> Add new Form</a><br>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Element</th>
+								<th>Attribute</th>
+								<th>Value</th>
+								<th>Text</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each form in formList}}
+						<tr>
+							<td>
+								{{view App.FormSelect  valueBinding='form.formSubmitElement' required='true' errorText='This field is Required' contentBinding="App.tags" optionValuePath="content" optionLabelPath="content" inputClassNames='input-small'}}
+							</td>
+							<td>
+								{{view App.FormTextField valueBinding='form.formSubmitAttribute' inputClassNames='input-small'}}
+							</td>
+							<td>
+								{{view App.FormTextField valueBinding='form.formSubmitAttributeValue' required='false'  inputClassNames='input-small'}}
+							</td>
+							<td>
+								{{view App.FormTextField valueBinding='form.formSubmitText'  inputClassNames='input-small'}}
+							</td>					
+							<td>
+								<a href="#" {{action 'remove' form}}><i class="icon-trash"></i> Delete </a>
+							</td>
+						</tr>
+						{{else}}<tr><td colspan="5">No available Forms.</td></tr>{{/each}}
+					</tbody>
+  					<tfoot>
+ 				 	</tfoot>
+				</table>
+
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/login">
+			
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Jatyta Login Configuration</legend>
+				{{view App.FormTextField  label="User Name Xpath: "  valueBinding='content.loginUserNameXpath' }}
+				{{view App.FormTextField  label="User Name Value: "  valueBinding='content.loginUserNameValue' }}
+				{{view App.FormTextField  label="Password Xpath: "  valueBinding='content.loginPasswordXpath' }}
+				{{view App.FormTextField  label="Password Value: "  valueBinding='content.loginPasswordValue' }}
+				{{view App.FormTextField  label="Submit Xpath: "  valueBinding='content.loginSubmitXpath' }}
+				
+			</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="configuration/validation">
+			
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Jatyta Validation Configuration</legend>
+
+				<a href="#" {{action 'newValidation' selectedConfigId validations }}><i class="icon-plus"></i> Add new Validation Configuration</a><br>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>HTML Element</th>
+								<th>Attribute Name</th>
+								<th>Attribute Value</th>
+								<th>Target Attribute Name</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each validation in validations}}
+						<tr>
+							<td>{{view App.FormSelect valueBinding="validation.htmlElement" contentBinding="htmlElements"
+									 optionValuePath="content.value" optionLabelPath="content.value"  isForm='' inputClassNames='input-small'}}</td>
+							<td>{{view App.TextAreaField valueBinding='validation.attributeName' isForm='' required='true'
+										 errorText='This field is Required'}}</td>
+							<td>{{view App.TextAreaField valueBinding='validation.attributeValue' isForm='' required='true'
+										errorText='This field is Required'}}</td>
+							<td>{{view App.TextAreaField valueBinding='validation.targetAttributeName' isForm=''}}</td>					
+							<td>
+								<a href="#" {{action 'openModal' 'delete-validation-modal' validation}}><i class="icon-trash"></i> Delete </a>
+							</td>
+						</tr>
+						{{else}}<tr><td colspan="5">No available Validation Configuration.</td></tr>{{/each}}
+					</tbody>
+  					<tfoot>
+ 				 	</tfoot>
+				</table>
+			</fieldset>
+		</form>
+	</script>
+
+	<script type="text/x-handlebars" data-template-name="configuration/brokenlinks">
+			
+		<form id="config_form" class="form-horizontal">	
+			<fieldset>
+				<legend>Jatyta Broken Links Configuration</legend>
+
+				<a href="#" {{action 'newBrokenLink' selectedConfigId brokenLinks }}><i class="icon-plus"></i> Add new Pattern</a><br>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Pattern</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each brokenlink in brokenLinks}}
+						<tr>
+							<td>
+								{{view App.TextAreaField valueBinding='brokenlink.pattern' isForm='' required='true' errorText='This field is Required'}}
+							</td>					
+							<td>
+								<a href="#" {{action 'openModal' 'delete-brokenlink-modal' brokenlink}}><i class="icon-trash"></i> Delete </a>
+							</td>
+						</tr>
+						{{else}}<tr><td colspan="2">No available Patterns.</td></tr>{{/each}}
+					</tbody>
+  					<tfoot>
+ 				 	</tfoot>
+				</table>
+			</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="delete-validation-modal">
+    	{{#modal-form  title="Delete Validation" confirm="remove" cancel="cancel" model=content}}
+
+			<h4>Are you sure to delete this?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+					{{view App.FormTextField label="Element : " valueBinding="content.htmlElement"  disabled="true" }}
+					{{view App.FormTextField label="Attribute : " valueBinding='content.attributeName' disabled="true"}}
+					{{view App.FormTextField label="Value : " valueBinding='content.attributeValue' disabled="true"}}
+					{{view App.FormTextField label="Target : " valueBinding='content.targetAttributeName' disabled="true"}}					
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>
+  	
+  	<script type="text/x-handlebars" data-template-name="delete-brokenlink-modal">
+    	{{#modal-form  title="Delete Broken link Pattern" confirm="remove" cancel="cancel" model=content}}
+
+			<h4>Are you sure to delete this?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+					{{view App.FormTextField label="Pattern : " disabled="true" valueBinding='content.pattern'  inputClassNames='input-xlarge' }}			
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>
+  	
+	
+	<script type="text/x-handlebars" data-template-name="configurations/new">
+		{{partial config_general}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="plugin_management">
+		<legend>Available Plugins</legend>
+		<table class="table table-striped restricted">
+			<thead>
+				<tr><th>Name</th><th>Description</th><th>ID</th><th></th></tr>
+			</thead>
+			<tbody>
+				{{#each plugin in controller}}
+				<tr>
+					<td>{{plugin.content.name}}</td>
+					<td>{{plugin.content.description}}</td>
+					<td>{{plugin.content.id}}</td>
+					<td><a href="#" {{action 'remove'}}><i class="icon-remove"></i> Delete</a></td>
+				</tr>
+				{{else}}<tr><td colspan="4">No available plugins.</td></tr>{{/each}}
+			</tbody>
+		</table>
+		<a href="#" {{action 'refresh'}}><i class="icon-refresh"></i> Refresh List</a>
+		<form id="plugin_upload_form" class="form-horizontal">
+			<fieldset>
+				<legend>Add Local Plugin</legend>
+				<div class="control-group">
+					{{view App.FileUploadView name="pluginFile"}}
+				</div>
+				<a href="#" {{action 'addFile'}}><i class="icon-plus"></i> Upload</a>
+			</fieldset>
+			<fieldset>
+				<legend>Add Remote Plugin</legend>
+				{{view App.FormTextField label="URL: " valueBinding="url"}}
+				<a href="#" {{action 'addURL'}}><i class="icon-plus"></i> Add</a>
+			</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="jatyta_management">
+		<ul class="nav nav-tabs">
+			{{#view App.NavView route='jatyta_management.index' }}<a href='#' {{action 'moveTo' view.route}}>Information</a>{{/view}}
+			{{#view App.NavView route='jatyta_management.propnames' }}<a href='#' {{action 'moveTo' view.route}}>PropNames</a>{{/view}}
+			{{#view App.NavView route='jatyta_management.kbdata' }}<a href='#' {{action 'moveTo' view.route}}>Schemas</a>{{/view}}
+		</ul>
+		{{outlet}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="jatyta_management/index">
+		{{partial jatyta_config}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_jatyta_config">
+		<form id="config_form" class="form-horizontal">
+			<fieldset>
+				<legend>Knowledge Base Information</legend>
+				Add Here some tutorial of the knowledge base.
+			</fieldset>
+		</form>
+	</script>
+	
+	
+	<!-- {{#each propname in content}} -->
+	
+	<script type="text/x-handlebars" data-template-name="jatyta_management/propnames">
+		<form id="config_form" class="form-horizontal">
+			<legend>PropNames</legend>
+				<table>
+					<tr>
+						<td>{{input type="text" value=filter}} <i class="icon-search"></i><a href="#" {{action 'setupNewPropnameModal'}}> <i class="icon-plus"></i> Add new PropName</a>  </td>
+					</tr>
+					<tr>
+						<td><b> Results: {{count}} Page: {{index}} of {{totalPages}}</b></td>
+					</tr>
+				<table>
+			<table class="table table-striped restricted">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Type</th>
+					<th>Comments</th>
+					<th>Actions</th>
+					<th>Show</th>
+				</tr>
+			</thead>
+			<tbody>
+			
+    			{{#each propname in filteredContent}}
+						<tr>
+							<form id="propname_form" class="form-horizontal">
+								
+								<td>
+									{{#if propname.editable}}	
+										{{view App.FormTextField valueBinding="propname.name" required="true" errorText="This field is Required"}}
+									{{else}}
+										{{propname.name}}
+									{{/if}}
+								</td>							
+								<td>
+									{{#if propname.editable}}
+										{{view App.FormSelect  valueBinding="propname.idNativeType" contentBinding="App.nativeTypesSelect" optionValuePath="content.value" optionLabelPath="content.name" placeholder="Select a Native Type" }}
+																				
+									{{else}}
+										{{propname.nativeType.typeName}}
+									{{/if}}
+								</td>
+								<td>
+									{{#if propname.editable}}	
+										{{view App.FormTextField valueBinding="propname.comments" placeholder="Propname Comments" }}
+									{{else}}
+										{{propname.comments}}
+									{{/if}}
+								</td>
+								<td> 
+									{{#if propname.idPropName}}
+										{{#if propname.editable}}
+											<a href="#" {{action 'save' propname}}><i class="icon-ok"></i> Save </a>
+											<a href="#" {{action 'cancel' propname}}><i class="icon-remove"></i> Cancel </a>
+										{{else}}	
+											<a href="#" {{action 'edit' propname}}><i class="icon-edit"></i> Edit </a>
+											<a href="#" {{action 'openModal' 'delete-propname-modal' propname}}><i class="icon-trash"></i> Delete </a>
+										{{/if}}
+										
+									{{else}}
+										<a href="#" {{action 'save' propname}}><i class="icon-ok"></i> Save </a>
+										<a href="#" {{action 'removeNew' content propname}}><i class="icon-trash"></i> Remove </a>
+									{{/if}}
+									
+								</td>
+								<td>
+									<a href="#" {{action 'setupPropValues' propname}}><i class="icon-list"></i> PropValues</a>
+								</td>
+							</form>
+						</tr>
+				{{else}}
+					<tr><td colspan="5">No available propnames.</td></tr>
+				{{/each}}
+			
+			</tbody>
+		</table>
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBack}}
+					<li class="disabled"><a href="#" {{action 'back'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'back'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNext}}
+					<li class="disabled" ><a href="#" {{action 'next'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'next'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+
+			
+		</form>		
+
+	</script>
+	
+	
+	
+	<script type="text/x-handlebars" data-template-name="delete-propname-modal">
+    	{{#modal-form title="Delete Propname" confirm="remove" cancel="cancel" model=content}}
+			<h4>Are you sure to delete this and the propvalues associated?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+					{{view App.FormTextField label="Name:" disabled="true" valueBinding="content.name" required="true" errorText="This field is Required"}}
+					{{view App.FormSelect label ="Type:" disabled="true" valueBinding="content.idNativeType" contentBinding="App.nativeTypesSelect" optionValuePath="content.value" optionLabelPath="content.name" required="true" errorText="This field is Required" }}
+					{{view App.FormTextField label="Comments:" disabled="true" valueBinding="content.comments" placeholder="Propname Comments" }}
+				</fieldset>
+			</form>
+    	{{/modal-form}}
+  	</script>
+  	
+  	<script type="text/x-handlebars" data-template-name="new-propname-modal">
+    	{{#modal-form title="New Propname" confirm="save" cancel="cancel" model=content}}
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+					{{view App.FormTextField label="Name:"  valueBinding="content.name" required="true" errorText="This field is Required"}}
+					{{view App.FormSelect label ="Type:"  valueBinding="content.idNativeType" contentBinding="App.nativeTypesSelect" optionValuePath="content.value" optionLabelPath="content.name" required="true" errorText="This field is Required" }}
+					{{view App.FormTextField label="Comments:"  valueBinding="content.comments" placeholder="Propname Comments" }}
+				</fieldset>
+			</form>
+    	{{/modal-form}}
+  	</script>
+	
+  	<script type="text/x-handlebars" data-template-name="propvalues-modal">
+		{{#modal-dialog title="Props Values" close="close" model=content}}
+			<legend>Props Values of {{content.name}}</legend>
+			<a href="#" {{action 'add' content}}><i class="icon-plus"></i> Add new PropValue</a><br>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Value</th>
+								<th>Valid</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each propvalue in content.propvalues}}
+						<tr>
+							<td>
+								{{#if propvalue.editable}}	
+									{{#if isBoolean }}
+										{{input type="checkbox" name="booleanValue" checked=propvalue.booleanValue class="checkbox"}} True
+									{{else}}
+										{{#if isNumber }}
+											{{view App.NumberField valueBinding="propvalue.value" }}
+										{{else}}	
+											{{#if isDate }}
+												{{view App.DateField valueBinding="propvalue.value" }}
+											{{else}}
+												{{#if isText }}
+													{{view App.TextAreaField valueBinding="propvalue.value"}}
+												{{/if}}
+											{{/if}}
+										{{/if}}	
+									{{/if}}
+								{{else}}
+									{{propvalue.value}}
+								{{/if}}
+							</td>
+							<td>
+								{{#if propvalue.editable}}	
+									{{input type="checkbox" name="isValid" checked=propvalue.isValid class="checkbox"}} Is Valid?
+								{{else}}
+									{{propvalue.isValid}}
+								{{/if}}
+							</td>
+							<td>
+								{{#if propvalue.idPropValues}}
+									{{#if propvalue.editable}}
+										<a href="#" {{action 'save' propvalue}}><i class="icon-ok"></i> Save </a>
+										<a href="#" {{action 'cancel' propvalue}}><i class="icon-remove"></i> Cancel </a>
+									{{else}}
+										<a href="#" {{action 'edit' propvalue}}><i class="icon-edit"></i> Edit </a>
+										<a href="#" {{action 'remove' propvalue content}}><i class="icon-trash"></i> Delete </a>
+									{{/if}}
+								{{else}}
+									<a href="#" {{action 'save' propvalue}}><i class="icon-ok"></i> Save </a>
+									<a href="#" {{action 'removeNew' propvalue content}}><i class="icon-trash"></i> Remove </a>
+								{{/if}}
+							</td>
+						</tr>
+						{{else}}<tr><td colspan="3">No available Prop Values.</td></tr>{{/each}}
+					</tbody>
+				</table>
+   		{{/modal-dialog}}
+  	</script>	
+	
+	<script type="text/x-handlebars" data-template-name="components/date-mask">
+      <div {{bind-attr class="form-group validState"}}>
+        {{input class="date form-control" value=value}}
+        <p class="info">*Format: YYYY-MM-DD</p>
+      </div>
+    </script> 
+	
+	<script type="text/x-handlebars" data-template-name="jatyta_management/kbdata">
+		
+		{{partial jatyta_kbdata}}
+		
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_jatyta_kbdata">
+	<form id="config_form" class="form-horizontal">
+		<fieldset>
+		{{partial schemas}}
+		{{#if selectedSchema}}
+			{{partial item_types}}
+		{{/if}}
+		{{#if selectedItemType}}
+			{{partial item_props}}
+		{{/if}}
+		</fieldset>
+	</form>
+	</script>
+	<script type="text/x-handlebars" data-template-name="_schemas">
+		<legend>Schemas</legend>
+				<table>
+					<tr>
+						<td>{{input type="text" value=filterSchemas}} <i class="icon-search"></i><a href="#" {{action 'setupNewSchemaModal'}}> <i class="icon-plus"></i> Add new Schema</a>  </td>
+					</tr>
+					<tr>
+						<td><b> Results: {{countSchema}} Page: {{indexSchema}} of {{totalPagesSchema}}</b></td>
+					</tr>
+				<table>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Comments</th>
+								<th>Actions</th>
+								<th>Show</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each schema in filteredSchemas}}
+						<tr>
+							<td>{{schema.schemaName}}</td>
+							
+							<td>{{schema.comments}}</td>
+							<td>
+								<a href="#" {{action 'openModal' 'edit-schema-modal' schema}}><i class="icon-edit"></i> Edit </a>
+								<a href="#" {{action 'openModal' 'delete-schema-modal' schema}}><i class="icon-trash"></i> Delete </a>
+							</td>
+							<td><a href="#" {{action 'refreshItemTypes' schema}}><i class="icon-list"></i> ItemTypes</a></td>
+						</tr>
+						{{else}}<tr><td colspan="4">No available schemas.</td></tr>{{/each}}
+					</tbody>
+				</table>
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBackSchema}}
+					<li class="disabled"><a href="#" {{action 'backSchema'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'backSchema'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNextSchema}}
+					<li class="disabled" ><a href="#" {{action 'nextSchema'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'nextSchema'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+	</script>
+	<script type="text/x-handlebars" data-template-name="_item_types">
+			<legend>Item Types of {{selectedSchema.schemaName}}</legend>
+				<table>
+					<tr>
+						<td>{{input type="text" value=filterItemTypes}} <i class="icon-search"></i><a href="#" {{action 'setupNewItemTypeModal' selectedSchema}}> <i class="icon-plus"></i> Add new ItemType</a>  </td>
+					</tr>
+					<tr>
+						<td><b> Results: {{countItemtype}} Page: {{indexItemtype}} of {{totalPagesItemtype}}</b></td>
+					</tr>
+				<table>
+
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Comments</th>
+								<th>Actions</th>
+								<th>Show</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each itemtype in filteredItemTypes}}
+						<tr>
+							<td>{{itemtype.typeName}}</td>
+						
+							<td>{{itemtype.comments}}</td>
+							<td><a href="#" {{action 'openModal' 'edit-itemtype-modal' itemtype}}><i class="icon-edit"></i> Edit</a>
+								<a href="#" {{action 'openModal' 'delete-itemtype-modal' itemtype}}><i class="icon-trash"></i> Delete </a>
+							</td>
+							<td><a href="#" {{action 'refreshItemProps' itemtype}}><i class="icon-list"></i> ItemProps</a></td>
+						</tr>
+						{{else}}<tr><td colspan="4">No available Item Types.</td></tr>{{/each}}
+					</tbody>
+				</table>
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBackItemType }}
+					<li class="disabled"><a href="#" {{action 'backItemtype'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'backItemtype'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNextItemType }}
+					<li class="disabled" ><a href="#" {{action 'nextItemtype'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'nextItemtype'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+  	</script>
+  	
+  	<script type="text/x-handlebars" data-template-name="_item_props">
+		<legend>Item Props of {{selectedItemType.typeName}}</legend>
+
+				<table>
+					<tr>
+						<td>{{input type="text" value=filterItemProps}} <i class="icon-search"></i><a href="#" {{action 'setupNewItemPropModal' selectedItemType}}> <i class="icon-plus"></i> Add new ItemProp</a>  </td>
+					</tr>
+					<tr>
+						<td><b> Results: {{countItemprop}} Page: {{indexItemprop}} of {{totalPagesItemprop}}</b></td>
+					</tr>
+				<table>
+
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>PropName</th>
+								<th>Comments</th>
+								<th>Actions</th>
+								<th>Show</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each itemprop in filteredItemProps}}
+						<form id="itemprop_form" class="form-horizontal">
+
+						<tr>
+							<td>
+								{{#if itemprop.editable}}	
+
+								
+
+									{{view App.ChosenSelect  
+										valueBinding="itemprop.idPropName" contentBinding="App.propNamesSelect" 
+										optionValuePath="content.value" optionLabelPath="content.name"
+										required="true" errorText="This field is Required" }}
+
+								{{else}}
+									{{itemprop.propName.name}}
+								{{/if}}
+							</td>
+							<td>
+								{{#if itemprop.editable}}	
+									{{view App.FormTextField valueBinding="itemprop.comments"}}
+								{{else}}
+									{{itemprop.comments}}
+								{{/if}}
+							</td>
+							<td>
+								{{#if itemprop.idItemProp}}
+									{{#if itemprop.editable}}
+										<a href="#" {{action 'saveItemProp' itemprop}}><i class="icon-ok"></i> Save </a>
+										<a href="#" {{action 'cancelItemProp' itemprop}}><i class="icon-remove"></i> Cancel </a>
+									{{else}}
+										<a href="#" {{action 'editItemProp' itemprop}}><i class="icon-edit"></i> Edit </a>
+										<a href="#" {{action 'openModal' 'delete-itemprop-modal' itemprop}}><i class="icon-trash"></i> Delete </a>
+									{{/if}}
+								{{else}}
+									<a href="#" {{action 'saveItemProp' itemprop}}><i class="icon-ok"></i> Save </a>
+									<a href="#" {{action 'removeNewItemProp' itemprops itemprop}}><i class="icon-trash"></i> Remove </a>
+								{{/if}}
+							</td>
+							<td><a href="#" {{action 'refreshPropValues' itemprop}}><i class="icon-list"></i> PropValues</a></td>
+						</tr>
+						</form>
+
+						{{else}}<tr><td colspan="4">No available Item Props.</td></tr>{{/each}}
+					</tbody>
+				</table>
+
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBackItemProp}}
+					<li class="disabled"><a href="#" {{action 'backItemprop'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'backItemprop'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNextItemProp}}
+					<li class="disabled" ><a href="#" {{action 'nextItemprop'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'nextItemprop'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+  	</script>
+  	
+  	<script type="text/x-handlebars" data-template-name="_prop_values">
+			<legend>Props Values of {{selectedItemProp.propName.name}}</legend>
+
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Value</th>
+								<th>Valid</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each propvalue in propvalues}}
+						<tr>
+							<td>{{propvalue.value}}</td>
+							<td>{{propvalue.isValid}}</td>
+						</tr>
+						{{else}}<tr><td colspan="2">No available Prop Values.</td></tr>{{/each}}
+					</tbody>
+				</table>
+  	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_native_types">
+			<legend>Native Types</legend>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Name</th>
+							
+							</tr>
+						</thead>
+					<tbody>
+						{{#each nativetype in nativetypes}}
+						<tr>
+							<td>{{nativetype.typeName}}</td>
+							
+						</tr>
+						{{else}}<tr><td colspan="1">No available Native Types.</td></tr>{{/each}}
+					</tbody>
+				</table>
+  	</script>
+
+  	<script type="text/x-handlebars" data-template-name="new-schema-modal">
+    	{{#modal-form title="New Schema" confirm="save" cancel="cancel" model=content}}
+
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField label="Name: " valueBinding="content.schemaName" placeholder="Schema Name" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox label="Is schema.org" checkedBinding="content.isSchemaOrg"}}
+				{{view App.FormTextField label="Comments: " valueBinding="content.comments" placeholder="Schema Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script> 
+		
+	<script type="text/x-handlebars" data-template-name="edit-schema-modal">
+    	{{#modal-form  title="Edit Schema" confirm="update" cancel="refresh" model=content}}
+
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField label="Name: " valueBinding="content.schemaName" placeholder="Schema Name" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox label="Is schema.org" checkedBinding="content.isSchemaOrg"}}
+				{{view App.FormTextField label="Comments: " valueBinding="content.comments" placeholder="Schema Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>
+  	
+  	<script type="text/x-handlebars" data-template-name="delete-schema-modal">
+    	{{#modal-form  title="Delete Schema" confirm="remove" cancel="cancel" model=content}}
+
+			<h4>Are you sure to delete this and the Itemtypes, itemprops and propvalues associated?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField label="Name: " disabled="true" valueBinding="content.schemaName" placeholder="Schema Name" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox label="Is schema.org" disabled="true" checkedBinding="content.isSchemaOrg"}}
+				{{view App.FormTextField label="Comments: " disabled="true" valueBinding="content.comments" placeholder="Schema Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>
+  	
+  	<script type="text/x-handlebars" data-template-name="new-itemtype-modal">
+    	{{#modal-form title="New Item Type" confirm="save" cancel="cancel" model=content}}
+
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField label="Name: " valueBinding="content.typeName" required="true" errorText="This field is Required"}}
+				{{view App.FormSelect label="Schema: " valueBinding="content.idSchema" contentBinding="App.schemaNames" optionValuePath="content.value" optionLabelPath="content.name" required="true" errorText="This field is Required"}}			
+				{{view App.FormTextField label="Comments: " valueBinding="content.comments" placeholder="Item Type Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>  	
+  	
+	<script type="text/x-handlebars" data-template-name="edit-itemtype-modal">
+    	{{#modal-form title="Edit Item Type" confirm="update" cancel="refresh" model=content}}
+
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField label="Name: " valueBinding="content.typeName" required="true" errorText="This field is Required"}}	
+				{{view App.FormTextField disabled="true"  label="Schema: " valueBinding="content.schema.schemaName" required="true" errorText="This field is Required"}}			
+				{{view App.FormTextField label="Comments: " valueBinding="content.comments" placeholder="Item Type Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>  
+  	
+	<script type="text/x-handlebars" data-template-name="delete-itemtype-modal">
+    	{{#modal-form title="Delete Item Type" confirm="remove" cancel="cancel" model=content}}
+			<h4>Are you sure to delete this and the itemprops and propvalues associated?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField disabled="true" label="Name: " valueBinding="content.typeName" required="true" errorText="This field is Required"}}	
+				{{view App.FormTextField disabled="true" label="Schema: " valueBinding="content.schema.schemaName" required="true" errorText="This field is Required"}}			
+				{{view App.FormTextField disabled="true" label="Comments: " valueBinding="content.comments" placeholder="Item Type Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>    	
+
+	<script type="text/x-handlebars" data-template-name="new-itemprop-modal">
+    	{{#modal-form title="New Item Prop" confirm="save" cancel="cancel" model=content}}
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.ChosenSelect  valueBinding="content.idPropName" contentBinding="App.propNamesSelect" optionValuePath="content.value" optionLabelPath="content.name" required="true" errorText="This field is Required" }}
+				{{view App.FormTextField disabled="true" label="Item Type: " valueBinding="content.itemType.typeName"}}
+				{{view App.FormTextField  label="Comments: " valueBinding="content.comments" placeholder="Item Prop Comments" }}
+
+				</fieldset>
+			</form>
+    	{{/modal-form}}
+  	</script>	  	
+
+  	
+	<script type="text/x-handlebars" data-template-name="delete-itemprop-modal">
+    	{{#modal-form title="Delete Item Prop" confirm="remove" cancel="cancel" model=content}}
+			<h4>Are you sure to delete this?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField disabled="true" label="Name: " valueBinding="content.propName.name" placeholder="Prop Name"}}
+				{{view App.FormTextField disabled="true" label="Item Type: " valueBinding="content.itemType.typeName"}}
+				{{view App.FormTextField disabled="true" label="Native Type: " valueBinding="content.propName.nativeType.typeName"}}
+				{{view App.FormTextField disabled="true" label="Comments: " valueBinding="content.comments" placeholder="Item Prop Comments" }}
+
+				</fieldset>
+			</form>
+    	{{/modal-form}}
+  	</script>	  	
+
+	<script type="text/x-handlebars" data-template-name="new-propvalue-modal">
+    	{{#modal-form title="New Prop Value" confirm="save" cancel="cancel" model=content}}
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+				{{view App.FormTextField disabled="true" label="Item Prop: " valueBinding="content.itemProp.propName" placeholder="Prop Name" }}
+				{{view App.FormTextField  label="Value: " valueBinding="content.value" placeholder="Value" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox label="Is Valid" checkedBinding="content.isValid"}}
+				</fieldset>
+			</form>
+    	{{/modal-form}}
+  	</script>  		
+  	
+	<script type="text/x-handlebars" data-template-name="edit-propvalue-modal">
+    	{{#modal-form title="Edit Prop Value" confirm="update" cancel="refresh" model=content}}
+
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField disabled="true" label="Item Prop: " valueBinding="content.itemProp.propName" placeholder="Prop Name" }}
+				{{view App.FormTextField  label="Value: " valueBinding="content.value" placeholder="Value" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox label="Is Valid" checkedBinding="content.isValid"}}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>	
+  	
+  	<script type="text/x-handlebars" data-template-name="delete-propvalue-modal">
+    	{{#modal-form title="Delete Prop Value" confirm="remove" cancel="cancel" model=content}}
+			<h4>Are you sure to delete this?</h4>
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField disabled="true" label="Item Prop: " valueBinding="content.itemProp.propName" placeholder="Prop Name" }}
+				{{view App.FormTextField disabled="true" label="Value: " valueBinding="content.value" placeholder="Value" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox  disabled="true" label="Is Valid" checkedBinding="content.isValid"}}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>	
+  	
+  	<script type="text/x-handlebars" data-template-name="edit-nativetype-modal">
+    	{{#modal-form title="Edit Native Type" confirm="update" cancel="refresh"}}
+
+			<form id="modal_form" class="form-horizontal">
+				<fieldset>
+
+				{{view App.FormTextField label="Name: " valueBinding="content.schemaName" placeholder="Schema Name" required="true" errorText="This field is Required"}}
+				{{view App.FormCheckbox label="Is schema.org" checkedBinding="content.isSchemaOrg"}}
+				{{view App.FormTextField label="Comments: " valueBinding="content.comments" placeholder="Schema Comments" }}
+
+				</fieldset>
+
+			</form>
+    	{{/modal-form}}
+  	</script>		  	
+		
+	<script type="text/x-handlebars" data-template-name="jatyta_management/crawlhistory">
+		{{partial jatyta_crawlhistory}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="_jatyta_crawlhistory">
+		<form id="config_form" class="form-horizontal">
+		<fieldset>
+			<legend>Crawl Records</legend>
+				<table class="table table-striped restricted">
+						<thead>
+							<tr>
+								<th>Crawljax Configuration Id</th>
+								<th>Crawljax Configuration Name</th>
+								<th>Crawljax Record Id</th>
+								<th>Create Time</th>
+							</tr>
+						</thead>
+					<tbody>
+						{{#each crawlrecord in jatytaCrawlRecords}}
+						<tr>
+							<td>{{crawlrecord.configurationId}}</td>
+							<td>{{crawlrecord.configurationName}}</td>
+							<td>{{crawlrecord.idCrawlRecord}}</td>
+							<td>{{crawlrecord.createTime}}</td>
+						</tr>
+						{{else}}<tr><td colspan="4">No available crawl records.</td></tr>{{/each}}
+					</tbody>
+				</table>
+	
+		</fieldset>
+		</form>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="crawlrecords">
+		{{outlet}}
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="crawlrecords/index">
+		<table > 
+			<tbody>
+				<tr>
+					<td>{{view App.FormTextField valueBinding="filter" }}  </td>
+					<td class="control-group" ><i class="icon-search"></i>  Status: </td>
+					<td>{{view App.FormSelect  valueBinding="statusFilter" contentBinding="App.crawlStatusTypeSelect" optionValuePath="content" optionLabelPath="content"  }} </td>
+					
+				</tr>
+			</tbody>
+		</table>
+		  
+		<table class="table table-striped">
+			<thead>
+				<tr><th>Crawl</th><th>Configuration</th><th>Execution Time</th><th>Status</th></tr>
+			</thead>
+			<tbody>
+				{{#each crawlrecord in controller.filteredContent}}
+				<tr>
+					<td>{{#link-to 'crawlrecord' crawlrecord}}Crawl {{crawlrecord.id}}{{/link-to}}</td>
+					<td><a {{bind-attr href="crawlrecord.configURL"}}>{{crawlrecord.configurationName}}</a></td>
+					<td>{{crawlrecord.startTimeFormatted}}</td>
+					<td>{{crawlrecord.crawlStatus}}</td>
+				</tr>
+				{{else}}<tr><td colspan="4">No available crawl records.</td></tr>{{/each}}
+			</tbody>
+		</table>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="crawlrecord">
+			<ul class="nav nav-tabs">
+				{{#view App.NavView route='log' }}{{#link-to 'log' content}}Log{{/link-to}}{{/view}}
+				{{#if controller.isFinished}}
+					{{#each plugin in content.plugins}}
+						{{#view App.NavView route='plugin_output' contentBinding="plugin" routeParam='key'}}{{#link-to 'plugin_output' content plugin}}{{plugin.name}}{{/link-to}}{{/view}}
+					{{/each}}
+				{{/if}}
+				{{#view App.NavView route='formfieldvalues' }}{{#link-to 'formfieldvalues' content}}Form Fields Values{{/link-to}}{{/view}}
+				{{#view App.NavView route='validationrecords' }}{{#link-to 'validationrecords' content}}Validation Records{{/link-to}}{{/view}}
+				{{#view App.NavView route='brokenstates' }}{{#link-to 'brokenstates' content}}Broken States{{/link-to}}{{/view}}
+				{{#view App.NavView route='statenames' }}{{#link-to 'statenames' content}}State Names{{/link-to}}{{/view}}
+			</ul>
+			{{outlet}}
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="log">
+		<div id="logPanel"></div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="plugin_output">
+		<div id="frameContainer">
+			<iframe {{bind-attr src="url"}} id="pluginOutputFrame" onload="$('#pluginOutputFrame').css({'height':(($(document).height())-150)+'px'}); $('#pluginOutputFrame').css({'width':$('#frameContainer').width()+'px'});" seamless></iframe>
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="formfieldvalues">
+		<legend>Knowledge Base Options: <button class="btn btn-default" {{action 'setupNewSchemaModal'}} type="button">Add new Schema</button>
+			<button class="btn btn-default" {{action 'setupNewItemTypeModal'}} type="button">Add new Item Type</button>
+			<button class="btn btn-default" {{action 'setupAddItemPropsModal' formValueGroupBy}} type="button">Add new PropNames from Value Records</button>
+		</legend>
+		<span style="font-weight: bold;">Number of form states: {{formStates.length}}</span>
+		<div id="thumbnailView" >
+			<ul class="thumbnailViewList">
+			{{#each detail in formStates itemController="FormfieldvaluesItem"}}
+				<li >
+					{{#if  selected}}
+						<img  {{bindAttr src='detail.thumbnailURL'}} {{action 'select' detail }} class="selectedPhotoItem"/> 
+					{{else}}
+						<img  {{bindAttr src='detail.thumbnailURL'}} {{action 'select' detail }} /> 
+					{{/if}}
+				</li>
+			{{/each}}
+			</ul>
+		</div>	
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBack}}
+					<li class="disabled"><a href="#" {{action 'back'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'back'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNext}}
+					<li class="disabled" ><a href="#" {{action 'next'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'next'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+		<span style="font-weight: bold;">Form state:</span> {{formState.name}} - 
+		<a href="#" {{action 'openModal' 'view-state-modal' formState.state }}>State{{formState.state}}</a>
+
+		<table class="table table-striped restricted">
+				<thead>
+					<tr>
+						<th>Label</th>
+						<th>Element</th>
+						<th>Order</th>
+						<th>Type</th>
+						<th>Value</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{#each formvalue in formValueRecords}}
+				<tr>
+					<td><img {{bindAttr src='formvalue.labelUrl' title='formvalue.formFieldXPath'}}/></td>
+					<td><img {{bindAttr src='formvalue.imageUrl' title='formvalue.formFieldXPath'}}/></td>
+					<td>{{formvalue.valueOrder}}</td>
+					<td>{{formvalue.type}}</td>
+					<td>{{formvalue.value}}</td>
+				</tr>
+				{{else}}<tr><td colspan="5">No available form value records.</td></tr>{{/each}}
+			</tbody>
+		</table>
+	</script>
+		
+	<script type="text/x-handlebars" data-template-name="view-state-modal">
+    	{{#modal-dialog title="View State " close="closeModal"}}
+			<div id="frameContainer" style="overflow: hidden;">
+				<iframe scrolling="no "{{bind-attr src="url"}} id="viewStateFrame"  
+					style="height:800px; width: 900px;margin-left: -30px;margin-top: -380px;"
+					seamless >
+				</iframe>
+			</div>
+    	{{/modal-dialog}}
+  	</script>  	
+  	
+ 
+  	
+ 	<script type="text/x-handlebars" data-template-name="add-kb-itemprops-modal">
+    	{{#modal-form title="Add new PropNames to Knowlegde Base" confirm="save" cancel="cancel" model=model}}
+			<a href="#" {{action 'newItemProp' model.details}}> <i class="icon-plus"></i> Add new PropName</a>
+			<form id="list_form" class="form-horizontal">
+				<table class="table table-striped table-condensed">
+					<thead>
+					</thead>
+					<tbody>
+					{{#each detail in model.details}}
+						<tr>
+							<td><b>Name:</b>{{view App.FormTextField valueBinding="detail.propName" required="true" errorText="This field is Required"}}
+								Type:{{view App.FormSelect valueBinding='detail.idNativeType' contentBinding="App.nativeTypesSelect" optionValuePath="content.value" optionLabelPath="content.name" required="true" errorText="This field is Required" }}
+							</td>
+							<td><b>Value:</b>{{view App.FormTextField valueBinding="detail.value" required="true" errorText="This field is Required"}}
+								Comments:{{view App.FormTextField valueBinding="detail.comments"}}	
+							</td>
+							<td>Is Valid:{{view App.FormCheckbox checkedBinding="detail.valid"}}</td>
+							<td><a href="#" {{action 'removeDetail' model.details detail}}><i class="icon-trash"></i> Remove </a></td>
+						</tr>
+					{{/each}}
+					</tbody>
+				</table>
+			</form>
+    	{{/modal-form}}
+  	</script>  	 	
+  	
+  	<script type="text/x-handlebars" data-template-name="validationrecords">
+		<span style="font-weight: bold;">Number of validation states: {{validationStates.length}}</span>
+		<br>
+		<div id="thumbnailView" >
+			<ul class="thumbnailViewList">
+			{{#each detail in validationStates itemController="ValidationrecordsItem"}}
+				<li >
+				
+					{{#if  selected}}
+						<img  {{bindAttr src='detail.thumbnailURL'}} {{action 'select' detail }} class="selectedPhotoItem"/> 
+					{{else}}
+						<img  {{bindAttr src='detail.thumbnailURL'}} {{action 'select' detail }} /> 
+					{{/if}}
+				</li>
+			{{/each}}
+			</ul>
+		</div>	
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBack}}
+					<li class="disabled"><a href="#" {{action 'back'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'back'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNext}}
+					<li class="disabled" ><a href="#" {{action 'next'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'next'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+		<span style="font-weight: bold;">Validation state:</span> {{validationState.name}} - 
+		<a href="#" {{action 'openModal' 'view-state-modal' validationState.state }}>State{{validationState.state}}</a>
+		<table class="table table-striped restricted">
+				<thead>
+					<tr>
+						<th>Target Element</th>
+						<th>Target State</th>
+						<th>Target Value</th>
+						<th>Value Type</th>
+						<th>Validation Message</th>
+						<th>Status</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{#each validation in validationRecords}}
+				<tr>
+					<td>{{validation.targetElementXpath}}</td>
+					<td><a href="#" {{action 'openModal' 'view-state-modal' validation.targetState }}>State{{validation.targetState}}</a></td>
+					<td>{{validation.targetValue}}</td>
+					<td>{{validation.valueType}}</td>
+					<td><img {{bindAttr src='validation.imageUrl' title='validation.validationElementXpath'}}/></td>
+					<td>{{validation.validationStatus}}</td>
+				</tr>
+				{{else}}<tr><td colspan="6">No available validation records.</td></tr>{{/each}}
+			</tbody>
+		</table>
+	</script>
+	
+	<script type="text/x-handlebars" data-template-name="brokenstates">
+		<span style="font-weight: bold;">Number of broken states: {{brokenStates.length}}</span>
+		<br>
+		<div id="thumbnailView" >
+			<ul class="thumbnailViewList">
+			{{#each detail in brokenStates itemController="BrokenstatesItem"}}
+				<li >
+					{{#if  selected}}
+						<img  {{bindAttr src='detail.callerThumbnailURL'}} {{action 'select' detail }} class="selectedPhotoItem"/> 
+					{{else}}
+						<img  {{bindAttr src='detail.callerThumbnailURL'}} {{action 'select' detail }} /> 
+					{{/if}}
+				</li>
+			{{/each}}
+			</ul>
+		</div>
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBack}}
+					<li class="disabled"><a href="#" {{action 'back'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'back'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNext}}
+					<li class="disabled" ><a href="#" {{action 'next'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'next'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+		
+		<table  class="table table-striped restricted">
+			<thead>
+				<tr>
+					<th>Broken State</th>
+					<th>Url</th>
+					<th>Element</th>
+					<th>State Caller</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#if brokenState}}
+				<tr>
+					<td><a href="#" {{action 'openModal' 'view-state-modal' brokenState.stateBroken }}>State{{brokenState.stateBroken}}</a></td>
+					<td>{{view App.FormTextField disabled="true" valueBinding="brokenState.urlBroken"    }}</td>
+					<td><img {{bindAttr src='brokenState.imageUrl' title='brokenState.xpath'}}/></td>
+					<td><a href="#" {{action 'openModal' 'view-state-modal' brokenState.stateCaller }}>State{{brokenState.stateCaller}}</a></td>
+				</tr>
+				{{else}}
+					<tr><td colspan="4">No available broken states records.</td></tr>
+				{{/if}}
+			</tbody>
+			<tfoot>
+		</table>
+		{{#if brokenState}}
+
+			<div style="position: relative; overflow: scroll;">
+				
+					<img  {{bindAttr src='brokenState.callerScreenshotURL'}}  class="stateImage"/> 
+					<a {{bindAttr style=brokenState.styleValue}} href="#" {{action 'openModal' 'view-state-modal' brokenState.stateBroken }} ></a>
+				
+			</div>
+
+		{{/if}}
+
+	</script>
+
+	<script type="text/x-handlebars" data-template-name="statenames">
+		<span style="font-weight: bold;">Total Number of states: {{stateNames.length}}</span>
+		<br>
+		<table>
+			<tr>
+				<td>{{input type="text" value=filter}} <i class="icon-search"></i></td>
+			</tr>
+			<tr>
+				<td><b> Results: {{count}} Page: {{index}} of {{totalPages}}</b></td>
+			</tr>
+		<table>
+
+		<table  class="table table-striped">
+			<thead>
+				<tr>
+					<th>State</th>
+					<th>Name</th>
+					<th>Url</th>
+					<th>Preview</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each stateName in filteredContent}}
+				<tr>
+					<td>{{stateName.state}}</td>
+					<td>{{stateName.name}}</td>
+					<td>{{stateName.url}}</td>
+					<td><a href="#" {{action 'openModal' 'view-state-modal' stateName.state }}>State{{stateName.state}}</a></td>
+				</tr>
+				{{else}}
+					<tr><td colspan="4">No available State Names records.</td></tr>
+				{{/each}}
+			</tbody>
+			<tfoot>
+		</table>
+		<div class="controlButtons">
+			<ul class="pager">
+				{{#if  disabledBack}}
+					<li class="disabled"><a href="#" {{action 'back'}} >Previous</a></li>
+				{{else}}
+					<li><a href="#" {{action 'back'}} >Previous</a></li>
+				{{/if}}
+				{{#if  disabledNext}}
+					<li class="disabled" ><a href="#" {{action 'next'}} >Next</a></li>
+				{{else}}
+					<li><a href="#" {{action 'next'}} >Next</a></li>
+				{{/if}}
+			</ul>
+		</div>
+	</script>
+
+	<script type="text/x-handlebars" data-template-name="about-modal">
+    	{{#modal-dialog title="Jatyta About" close="closeModal"}}
+			<div style="text-align:center;">
+			<p>Universidad Nacional de Asunción</p>
+			<p>Facultad Politécnica</p>
+			<p>Ingeniería en Informática</p>
+			<p>Proyecto de Final de Grado: Automatización de Pruebas para Interfaces de Aplicaciones Web</p>
+			<p>Miguel Giménez, Alberto Espínola</p>
+			<p>2016</p>
+			</div>
+			
+    	{{/modal-dialog}}
+  	</script>  	  		
+		
+	<script type="text/x-handlebars" id="components/modal-dialog">
+      <div class="modal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+				 <button {{action "close"}} type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              	 <h3>{{title}}</h3>
+            </div>
+            <div class="modal-body">
+              {{yield}}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal"{{action "close"}}>Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  	</script>	
+  	<script type="text/x-handlebars" id="components/modal-form">
+      <div class="modalform">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+					<button {{action "cancel" model}} type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              	 <h3>{{title}}</h3>
+            </div>
+            <div class="modal-body">
+              {{yield}}
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal"{{action "cancel" model}}>Cancel</button>
+              <button type="button" class="btn btn-primary" {{action "confirm" model}}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  	</script>	
+
+	
+	<script src="js/libs/jquery-1.9.1.js"></script>
+  	<script src="js/libs/handlebars-1.0.0.js"></script>
+  	<script src="js/libs/ember-1.0.1.js"></script>
+  	<script src="js/libs/chosen.jquery.js"></script>
+	<script src="js/libs/moment.min.js"></script>
+  	<script src="js/libs/pikaday.js"></script>
+
+	
+	<script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/models.js"></script>
+    <script type="text/javascript" src="js/views.js"></script>
+    <script type="text/javascript" src="js/controllers.js"></script>
+    <script type="text/javascript" src="js/validation.js"></script>
+	
+
+</body>
+</html>

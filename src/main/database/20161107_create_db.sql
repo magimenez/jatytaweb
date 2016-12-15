@@ -1,0 +1,12 @@
+CREATE ROLE jatyta LOGIN
+  ENCRYPTED PASSWORD 'md568bdc2213b2f33700d49a6b37ff1ab53'
+  NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+COMMENT ON ROLE jatyta IS 'The default user for jatyta knowledge base';
+
+CREATE DATABASE kbjatyta
+  WITH OWNER = jatyta
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'es_PY.UTF-8'
+       LC_CTYPE = 'es_PY.UTF-8'
+       CONNECTION LIMIT = -1;
