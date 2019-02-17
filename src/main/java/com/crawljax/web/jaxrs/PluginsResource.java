@@ -1,6 +1,5 @@
 package com.crawljax.web.jaxrs;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -17,13 +16,13 @@ import javax.ws.rs.core.Response;
 
 import com.crawljax.web.LogWebSocketServlet;
 import com.crawljax.web.exception.CrawljaxWebException;
-import sun.misc.BASE64Decoder;
 
 import com.crawljax.web.model.Plugin;
 import com.crawljax.web.model.Plugins;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.sun.jersey.multipart.FormDataParam;
+import java.util.Base64;
 
 @Singleton
 @Produces(MediaType.APPLICATION_JSON)
@@ -69,16 +68,16 @@ public class PluginsResource {
 		boolean error = false;
 		if(file != null) {
 			String content = file.substring(file.indexOf(',') + 1);
-			BASE64Decoder decoder = new BASE64Decoder();
+			                 
 			try {
-				byte[] decodedBytes = decoder.decodeBuffer(content);
+				byte[] decodedBytes = Base64.getDecoder().decode(content);
 				try {
 					plugin = plugins.add(name, decodedBytes);
 				} catch (CrawljaxWebException e) {
 					LogWebSocketServlet.sendToAll("message-error-" + e.getMessage());
 					error = true;
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else if(url != null) {
